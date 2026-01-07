@@ -70,6 +70,27 @@ void SimpleLog::slog::emit(const Event &event, logfile_writer *p_lfwriter) {
     
     std::lock_guard<std::mutex> lock(m_mutex);
 
+    uint32_t process_id;
+    switch (m_os) {
+    case SimpleLog::OperatingSystem::not_set:
+        process_id = 0;
+        break;
+    case SimpleLog::OperatingSystem::windows:
+        process_id = SimpleLog::current_process_id_windows();
+        break;
+    case SimpleLog::OperatingSystem::macos:
+        process_id = 0;
+        break;
+    case SimpleLog::OperatingSystem::linux:
+        process_id = 0;
+        break;
+    case SimpleLog::OperatingSystem::unix:
+        process_id = 0;
+        break;
+    default:
+        process_id = 0;
+    }
+
     if (has_target(m_targets, SimpleLog::LogTarget::os)) {
         // log to operating system
     }
@@ -87,7 +108,7 @@ void SimpleLog::slog::emit(const Event &event, logfile_writer *p_lfwriter) {
     }
     
     if (has_target(m_targets, SimpleLog::LogTarget::console)) {
-        std::cout << "logging to console" << std::endl;
+        
     }
 }
 

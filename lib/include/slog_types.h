@@ -52,7 +52,6 @@ namespace SimpleLog {
         Severity severity;
         std::string source;
         std::string host;
-        uint32_t pid;
         std::string message;
     };
 }

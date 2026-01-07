@@ -3,6 +3,7 @@
 
 #include <slog_types.h>
 #include <logfile_writer.h>
+#include <sl_functions.h>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
