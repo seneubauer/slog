@@ -10,9 +10,7 @@
 #include <unordered_map>
 
 namespace SimpleLog {
-
 	class slog {
-
 	public:
 		slog(const SimpleLog::LogTarget &targets, const bool &inprogress) : m_targets(targets), m_inprogress(inprogress) {}
 		~slog() { stop(); }

@@ -11,6 +11,8 @@ void generator(SimpleLog::slog *s, const int &value) {
 
 int main() {
 	
+	std::cout << std::string("started...") << std::endl;
+	
 	SimpleLog::slog s(SimpleLog::LogTarget::csv, true);
 	
 	s.start();
@@ -23,6 +25,8 @@ int main() {
 	
 	t0.join();
 	t1.join();
+	
+	std::cout << std::string("finished...") << std::endl;
 	
 	std::string exit_clause;
 	std::getline(std::cin, exit_clause);
