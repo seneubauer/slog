@@ -2,34 +2,37 @@
 #include <slog.h>
 #include <thread>
 #include <iostream>
+#include <chrono>
 
-void generator(SimpleLog::slog *s, const int &value) {
+std::mutex mx;
+
+void generator(SimpleLog::slog *p_s, const SimpleLog::Severity &severity, const std::string &source, const int &pid, const std::string &message) {
 	SimpleLog::Event event;
-	event.message = std::string("value: ") + std::to_string(value);
-	s->log(event);
+
+    event.severity = severity;
+    event.timestamp = std::chrono::system_clock::now();
+    event.source = source;
+    event.pid = pid;
+	event.message = message;
+    
+	p_s->log(event);
 }
 
 int main() {
+    std::string error;
+    SimpleLog::LogTarget targets = SimpleLog::LogTarget::file;
+    
+	SimpleLog::slog s(targets, SimpleLog::OperatingSystem::windows);
+    s.set_file_parameters("app_log", 64);
+    
+    if (!s.start(error))
+        return 1;
 	
-	std::cout << std::string("started...") << std::endl;
-	
-	SimpleLog::slog s(SimpleLog::LogTarget::csv, true);
-	
-	s.start();
-	
-	std::thread t0(generator, &s, 0);
-	
-	std::thread t1(generator, &s, 1);
-	
-	s.stop();
-	
-	t0.join();
+	std::thread t0(generator, &s, SimpleLog::Severity::warning, "testapp", 0, "message 0");
+	std::thread t1(generator, &s, SimpleLog::Severity::critical, "testapp", 0, "message 1");
+    
+    t0.join();
 	t1.join();
-	
-	std::cout << std::string("finished...") << std::endl;
-	
-	std::string exit_clause;
-	std::getline(std::cin, exit_clause);
 	
 	return 0;
 }

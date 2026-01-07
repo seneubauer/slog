@@ -1,9 +1,9 @@
-add_executable(app main.cpp)
+add_executable(main main.cpp)
 
-target_link_libraries(app PRIVATE SimpleLog)
+target_link_libraries(main PRIVATE SimpleLog)
 
 if (MSVC)
-	target_compile_options(app PRIVATE /W4 /EHsc)
+	target_compile_options(main PRIVATE /W4 /EHsc)
 else()
-	target_compile_options(app PRIVATE -Wall -Wextra -Wpedantic -02)
+	target_compile_options(main PRIVATE -Wall -Wextra -Wpedantic -02)
 endif()
