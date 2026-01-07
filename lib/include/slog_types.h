@@ -3,10 +3,6 @@
 
 #include <string>
 #include <cstdint>
-#include <iomanip>
-#include <ctime>
-#include <chrono>
-#include <sstream>
 
 namespace SimpleLog {
 
@@ -54,10 +50,9 @@ namespace SimpleLog {
 
     struct Event {
         Severity severity;
-        std::chrono::time_point<std::chrono::system_clock> timestamp;
         std::string source;
         std::string host;
-        int pid;
+        uint32_t pid;
         std::string message;
     };
 }

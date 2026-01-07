@@ -26,7 +26,7 @@ namespace SimpleLog {
     private:
         void process(logfile_writer *p_lfwriter);
         void emit(const Event &event, logfile_writer *p_lfwriter);
-        std::string timestamp_str(std::chrono::time_point<std::chrono::system_clock> tp);
+        std::string timestamp_str();
 
         // operative members
         SimpleLog::OperatingSystem m_os;

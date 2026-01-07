@@ -2,6 +2,7 @@
 #include <utility>
 #include <sstream>
 #include <iostream>
+#include <format>
 
 void SimpleLog::slog::set_file_parameters(const std::string &filepath, const uint16_t &buffersize) {
     m_logfile_path = filepath;
@@ -75,7 +76,7 @@ void SimpleLog::slog::emit(const Event &event, logfile_writer *p_lfwriter) {
 
     if (has_target(m_targets, SimpleLog::LogTarget::file)) {
         std::string severity = m_severity_defs[event.severity].alias;
-        std::string timestamp = timestamp_str(event.timestamp);
+        std::string timestamp = timestamp_str();
         std::string source = event.source;
         std::string message = event.message;
         p_lfwriter->add_entry(severity, timestamp, source, message);
@@ -90,18 +91,8 @@ void SimpleLog::slog::emit(const Event &event, logfile_writer *p_lfwriter) {
     }
 }
 
-std::string SimpleLog::slog::timestamp_str(std::chrono::time_point<std::chrono::system_clock> tp) {
-    
-    std::time_t time = std::chrono::system_clock::to_time_t(tp);
-    std::tm tm_buffer;
-    
-    #ifdef _WIN32
-        localtime_s(&tm_buffer, &time);
-    #else
-        localtime_r(&time, &tm_buffer);
-    #endif
-    
-    std::ostringstream oss;
-    oss << std::put_time(&tm_buffer, "%Y-%m-%d %H:%M:%S");
-    return oss.str();
+std::string SimpleLog::slog::timestamp_str() {
+    std::string fmt = "{:%Y-%m-%d %H:%M:%S}";
+    auto now = std::chrono::system_clock::now();
+    return std::vformat(fmt, std::make_format_args(now));
 }
