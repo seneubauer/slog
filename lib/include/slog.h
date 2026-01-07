@@ -3,7 +3,7 @@
 
 #include <slog_types.h>
 #include <mutex>
-#include <conditional_variable>
+#include <condition_variable>
 #include <thread>
 #include <atomic>
 #include <queue>
@@ -14,7 +14,7 @@ namespace SimpleLog {
 	class slog {
 
 	public:
-		slog() : m_targets(SimpleLog::LogTarget::not_set), m_inprogress(true) {}
+		slog(const SimpleLog::LogTarget &targets, const bool &inprogress) : m_targets(targets), m_inprogress(inprogress) {}
 		~slog() { stop(); }
 
 		void set_logging_targets(const SimpleLog::LogTarget &targets);
@@ -44,7 +44,7 @@ namespace SimpleLog {
 		std::thread m_thread;
 		std::atomic<bool> m_inprogress;
 
-		std::unordered_map<Severity, std::string> m_severity_defs = {
+		std::unordered_map<Severity, SimpleLog::SeverityDef> m_severity_defs = {
 			{SimpleLog::Severity::emergency, 		SimpleLog::SeverityDef {0, std::string("emerg")}},
 			{SimpleLog::Severity::alert, 			SimpleLog::SeverityDef {1, std::string("alert")}},
 			{SimpleLog::Severity::critical, 		SimpleLog::SeverityDef {2, std::string("crit")}},
@@ -54,7 +54,7 @@ namespace SimpleLog {
 			{SimpleLog::Severity::informational,	SimpleLog::SeverityDef {6, std::string("info")}},
 			{SimpleLog::Severity::debug, 			SimpleLog::SeverityDef {7, std::string("debug")}}
 		};
-	}
+	};
 }
 
 #endif
