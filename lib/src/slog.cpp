@@ -1,57 +1,11 @@
 #include <slog.h>
-#include <utility>
-#include <sstream>
+#include <slog_utility.h>
 #include <iostream>
-#include <format>
+#include <memory>
 
-void SimpleLog::slog::set_file_parameters(const std::string &filepath, const uint16_t &buffersize) {
-    m_logfile_path = filepath;
-    m_logfile_buffersize = buffersize;
-}
-
-void SimpleLog::slog::set_sql_parameters(const std::string &server, const std::string &database, const std::string &driver, const SimpleLog::SqlApi &sql_api) {
-    m_sql_server = server;
-    m_sql_database = database;
-    m_sql_driver = driver;
-    m_sql_api = sql_api;
-}
-
-void SimpleLog::slog::log(Event event) {
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_events.push(std::move(event));
-    }
-    m_cvar.notify_one();
-}
-
-bool SimpleLog::slog::start(std::string &error) {
-
-    if (has_target(m_targets, SimpleLog::LogTarget::file)) {
-        m_lfwriter.set_parameters(m_logfile_path, m_logfile_buffersize);
-        uint8_t rx = m_lfwriter.begin();
-        if (rx) {
-            error = m_lfwriter.interpret_return_code(rx);
-            return false;
-        }
-    }
-
-    m_thread = std::thread(&SimpleLog::slog::process, this, &m_lfwriter);
-    return true;
-}
-
-void SimpleLog::slog::stop() {
-    {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_inprogress = false;
-    }
-    m_cvar.notify_one();
-    if (m_thread.joinable())
-        m_thread.join();
-}
-
-void SimpleLog::slog::process(logfile_writer *p_lfwriter) {
+void SimpleLog::slog::process(std::shared_ptr<SimpleLog::file_writer> p_filewriter) {
     while (true) {
-        Event event;
+        SimpleLogTypes::Event event;
         {
             std::unique_lock<std::mutex> lock(m_mutex);
             m_cvar.wait(lock, [&]{ return !m_events.empty() || !m_inprogress; });
@@ -62,58 +16,108 @@ void SimpleLog::slog::process(logfile_writer *p_lfwriter) {
             event = m_events.front();
             m_events.pop();
         }
-        emit(event, p_lfwriter);
+        emit(event, p_filewriter);
     }
 }
 
-void SimpleLog::slog::emit(const Event &event, logfile_writer *p_lfwriter) {
+void SimpleLog::slog::emit(const SimpleLogTypes::Event &event, std::shared_ptr<SimpleLog::file_writer> p_filewriter) {
     
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    uint32_t process_id;
-    switch (m_os) {
-    case SimpleLog::OperatingSystem::not_set:
-        process_id = 0;
-        break;
-    case SimpleLog::OperatingSystem::windows:
-        process_id = SimpleLog::current_process_id_windows();
-        break;
-    case SimpleLog::OperatingSystem::macos:
-        process_id = 0;
-        break;
-    case SimpleLog::OperatingSystem::linux:
-        process_id = 0;
-        break;
-    case SimpleLog::OperatingSystem::unix:
-        process_id = 0;
-        break;
-    default:
-        process_id = 0;
-    }
-
-    if (has_target(m_targets, SimpleLog::LogTarget::os)) {
+    if (SimpleLogUtility::has_enum<SimpleLogTypes::LoggingTarget>(m_targets, SimpleLogTypes::LoggingTarget::os)) {
         // log to operating system
     }
 
-    if (has_target(m_targets, SimpleLog::LogTarget::file)) {
-        std::string severity = m_severity_defs[event.severity].alias;
-        std::string timestamp = timestamp_str();
+    if (SimpleLogUtility::has_enum<SimpleLogTypes::LoggingTarget>(m_targets, SimpleLogTypes::LoggingTarget::file)) {
+        std::string severity = SimpleLogUtility::severity_alias(event.severity);
+        std::string timestamp = SimpleLogUtility::get_timestamp_str();
         std::string source = event.source;
         std::string message = event.message;
-        p_lfwriter->add_entry(severity, timestamp, source, message);
+        p_filewriter->log(severity, timestamp, source, message);
     }
 
-    if (has_target(m_targets, SimpleLog::LogTarget::sql)) {
+    if (SimpleLogUtility::has_enum<SimpleLogTypes::LoggingTarget>(m_targets, SimpleLogTypes::LoggingTarget::sql)) {
         // log to sql database
     }
-    
-    if (has_target(m_targets, SimpleLog::LogTarget::console)) {
-        
+
+    if (SimpleLogUtility::has_enum<SimpleLogTypes::LoggingTarget>(m_targets, SimpleLogTypes::LoggingTarget::console)) {
+        std::string severity = SimpleLogUtility::severity_alias(event.severity);
+        std::string timestamp = SimpleLogUtility::get_timestamp_str();
+        std::string source = event.source;
+        std::string message = event.message;
+        std::cout << std::left
+                  << std::setw(10) << severity
+                  << std::setw(30) << timestamp
+                  << std::setw(20) << source
+                  << std::setw(20) << message
+                  << std::endl;
     }
 }
 
-std::string SimpleLog::slog::timestamp_str() {
-    std::string fmt = "{:%Y-%m-%d %H:%M:%S}";
-    auto now = std::chrono::system_clock::now();
-    return std::vformat(fmt, std::make_format_args(now));
+const bool SimpleLog::slog::set_parameters_os_windows(std::string &error) {
+    if (false) {
+        error = std::string("windows logger evaluates to nullptr");
+        return false;
+    }
+    // windows os logging not implemented yet
+    return true;
+}
+
+const bool SimpleLog::slog::set_parameters_os_nonwindows(std::string &error) {
+    if (false) {
+        error = std::string("nonwindows logger evaluates to nullptr");
+        return false;
+    }
+    // nonwindows os logging not implemented yet
+    return true;
+}
+
+const bool SimpleLog::slog::set_parameters_file(const std::string &filepath, const uint16_t &buffersize, const std::string &delimitor, const std::string &file_extension, std::string &error) {
+    if (!mp_filewriter) {
+        error = std::string("file logger evaluates to nullptr");
+        return false;
+    }
+    mp_filewriter->define(filepath, buffersize, delimitor, file_extension);
+    return true;
+}
+
+const bool SimpleLog::slog::set_parameters_sql(std::string &error) {
+    if (false) {
+        error = std::string("sql logger evaluates to nullptr");
+        return false;
+    }
+    // sql logging not implemented yet
+    return true;
+}
+
+const bool SimpleLog::slog::start(std::string &error) {
+
+    if (SimpleLogUtility::has_enum<SimpleLogTypes::LoggingTarget>(m_targets, SimpleLogTypes::LoggingTarget::file)) {
+        uint8_t rx = mp_filewriter->start();
+        if (rx) {
+            error = mp_filewriter->return_code_def(rx);
+            return false;
+        }
+    }
+
+    m_thread = std::thread(&SimpleLog::slog::process, this, mp_filewriter);
+    return true;
+}
+
+void SimpleLog::slog::log(SimpleLogTypes::Event event) {
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_events.push(std::move(event));
+    }
+    m_cvar.notify_one();
+}
+
+void SimpleLog::slog::stop() {
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_inprogress = false;
+    }
+    m_cvar.notify_one();
+    if (m_thread.joinable())
+        m_thread.join();
 }

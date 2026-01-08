@@ -3,8 +3,9 @@
 
 #include <string>
 #include <cstdint>
+#include <unordered_map>
 
-namespace SimpleLog {
+namespace SimpleLogTypes {
 
     enum class OperatingSystem {
         not_set,
@@ -19,18 +20,16 @@ namespace SimpleLog {
         odbc
     };
 
-    enum class LogTarget : uint8_t {
+    enum class LoggingTarget : uint8_t {
         not_set     = 1 << 0,
         os          = 1 << 1,
         file        = 1 << 2,
         sql         = 1 << 3,
         console     = 1 << 4
     };
-    constexpr LogTarget operator|(LogTarget a, LogTarget b) { return static_cast<LogTarget>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b)); }
-    constexpr LogTarget operator&(LogTarget a, LogTarget b) { return static_cast<LogTarget>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b)); }
-    constexpr LogTarget operator~(LogTarget a) { return static_cast<LogTarget>(~static_cast<uint8_t>(a)); }
-    constexpr bool lt_any(const LogTarget &targets) { return static_cast<uint8_t>(targets) != 0; }
-    constexpr bool has_target(const LogTarget &targets, const LogTarget &check_value) { return lt_any(targets & check_value); }
+    constexpr LoggingTarget operator|(LoggingTarget a, LoggingTarget b) { return static_cast<LoggingTarget>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b)); }
+    constexpr LoggingTarget operator&(LoggingTarget a, LoggingTarget b) { return static_cast<LoggingTarget>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b)); }
+    constexpr LoggingTarget operator~(LoggingTarget a) { return static_cast<LoggingTarget>(~static_cast<uint8_t>(a)); }
 
     enum class Severity {
         emergency,
@@ -41,11 +40,6 @@ namespace SimpleLog {
         notice,
         informational,
         debug
-    };
-
-    struct SeverityDef {
-        int value;
-        std::string alias;
     };
 
     struct Event {
