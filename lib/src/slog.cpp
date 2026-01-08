@@ -55,11 +55,11 @@ void SimpleLog::slog::emit(const SimpleLogTypes::Event &event, std::shared_ptr<S
 }
 
 const bool SimpleLog::slog::set_parameters_os_windows(std::string &error) {
-    if (false) {
+    if (!mp_winwriter) {
         error = std::string("windows logger evaluates to nullptr");
         return false;
     }
-    // windows os logging not implemented yet
+    mp_winwriter->define();
     return true;
 }
 

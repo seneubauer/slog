@@ -2,6 +2,7 @@ add_library(
 	SimpleLog STATIC
 	src/slog.cpp
     src/file_writer.cpp
+    src/windows_writer.cpp
 )
 
 target_include_directories(

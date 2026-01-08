@@ -4,6 +4,7 @@
 #include <slog_types.h>
 #include <slog_utility.h>
 #include <file_writer.h>
+#include <windows_writer.h>
 
 #include <memory>
 #include <utility>
@@ -31,6 +32,7 @@ namespace SimpleLog {
 
         // writer members
         std::shared_ptr<SimpleLog::file_writer> mp_filewriter;
+        std::shared_ptr<SimpleLog::windows_writer> mp_winwriter;
 
         // concurrency functions
         void process(std::shared_ptr<SimpleLog::file_writer> p_filewriter);
@@ -44,6 +46,10 @@ namespace SimpleLog {
             if (SimpleLogUtility::has_enum<SimpleLogTypes::LoggingTarget>(m_targets, SimpleLogTypes::LoggingTarget::file))
                 mp_filewriter = std::make_shared<SimpleLog::file_writer>();
             
+            mp_winwriter = nullptr;
+            if (SimpleLogUtility::has_enum<SimpleLogTypes::LoggingTarget>(m_targets, SimpleLogTypes::LoggingTarget::os) && m_os == SimpleLogTypes::windows)
+                mp_winwriter = std::make_shared<SimpleLog::windows_writer>();
+
         }
         ~slog() { stop(); }
 
