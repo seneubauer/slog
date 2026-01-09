@@ -51,7 +51,7 @@ namespace SimpleLog {
         }
         ~slog() { stop(); }
 
-        bool set_parameters_eventlog(const std::wstring &application, std::string &error);
+        bool set_parameters_eventlog(const std::string &application, std::string &error);
         bool set_parameters_file(const std::string &filepath, const uint16_t &buffersize, const std::string &delimitor, const std::string &file_extension, std::string &error);
         bool set_parameters_sql(std::string &error);
         bool start(std::string &error);

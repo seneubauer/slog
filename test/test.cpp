@@ -16,16 +16,18 @@ void generator(SimpleLog::slog *p_s, const SimpleLogTypes::Severity &severity, c
 
 int main() {
     std::string error;
-    SimpleLogTypes::LoggingTarget targets = SimpleLogTypes::LoggingTarget::file | SimpleLogTypes::LoggingTarget::console | SimpleLogTypes::LoggingTarget::eventlog;
+    SimpleLogTypes::LoggingTarget targets = SimpleLogTypes::LoggingTarget::eventlog;
 
 	SimpleLog::slog s(targets);
 
+    /*
     if (!s.set_parameters_file("test_log", 64, "||", ".slog", error)) {
         std::cout << error << std::endl;
         return 1;
     }
+    */
 
-    if (!s.set_parameters_eventlog(L"simplelog_test", error)) {
+    if (!s.set_parameters_eventlog("simplelog_test", error)) {
         std::cout << error << std::endl;
         return 1;
     }
