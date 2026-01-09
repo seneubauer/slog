@@ -2,6 +2,7 @@
 #include <slog_types.h>
 #include <thread>
 #include <iostream>
+#include <string>
 
 void generator(SimpleLog::slog *p_s, const SimpleLogTypes::Severity &severity, const std::string &source, const std::string &message) {
 	SimpleLogTypes::Event event;
@@ -15,14 +16,24 @@ void generator(SimpleLog::slog *p_s, const SimpleLogTypes::Severity &severity, c
 
 int main() {
     std::string error;
-    SimpleLogTypes::LoggingTarget targets = SimpleLogTypes::LoggingTarget::file | SimpleLogTypes::LoggingTarget::console;
+    SimpleLogTypes::LoggingTarget targets = SimpleLogTypes::LoggingTarget::file | SimpleLogTypes::LoggingTarget::console | SimpleLogTypes::LoggingTarget::eventlog;
 
-	SimpleLog::slog s(targets, SimpleLogTypes::OperatingSystem::windows);
-    if (!s.set_parameters_file("test_log", 64, "||", ".slog", error))
-        return 1;
+	SimpleLog::slog s(targets);
 
-    if (!s.start(error))
+    if (!s.set_parameters_file("test_log", 64, "||", ".slog", error)) {
+        std::cout << error << std::endl;
         return 1;
+    }
+
+    if (!s.set_parameters_eventlog(L"simplelog_test", error)) {
+        std::cout << error << std::endl;
+        return 1;
+    }
+
+    if (!s.start(error)) {
+        std::cout << error << std::endl;
+        return 1;
+    }
 
 	std::thread t0(generator, &s, SimpleLogTypes::Severity::warning, "testapp", "message 0");
 	std::thread t1(generator, &s, SimpleLogTypes::Severity::critical, "testapp", "message 1");

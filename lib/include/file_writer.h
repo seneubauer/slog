@@ -21,7 +21,7 @@ namespace SimpleLog {
         static constexpr uint8_t FILE_PATH_NOT_DEFINED      = 6;
         const std::unordered_map<uint8_t, std::string> cm_return_codes {
             {SUCCESS,                   std::string("no error")},
-            {PARAMETERS_NOT_DEFINED,    std::string("writer parameters are not defined")},
+            {PARAMETERS_NOT_DEFINED,    std::string("file writer parameters are not defined")},
             {INVALID_FILEPATH,          std::string("filepath exists but is not a regular file")},
             {FILE_ACCESS_ERROR,         std::string("file could not be opened or created")},
             {FILE_ALREADY_CLOSED,       std::string("file was already closed")},
@@ -44,8 +44,8 @@ namespace SimpleLog {
         ~file_writer() { stop(); }
 
         void define(const std::string &filepath, const uint16_t &buffersize, const std::string &delimitor, const std::string &file_extension);
-        const uint8_t start();
-        const uint8_t log(const std::string &severity, const std::string &timestamp, const std::string &source, const std::string &message);
+        uint8_t start();
+        uint8_t log(const std::string &severity, const std::string &timestamp, const std::string &source, const std::string &message);
         void stop();
         const std::string return_code_def(const uint8_t &return_code);
 

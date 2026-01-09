@@ -1,4 +1,9 @@
 #include <file_writer.h>
+#include <string>
+#include <cstdint>
+#include <filesystem>
+#include <fstream>
+#include <unordered_map>
 
 void SimpleLog::file_writer::define(const std::string &filepath, const uint16_t &buffersize, const std::string &delimitor, const std::string &file_extension) {
     m_filepath = std::filesystem::path(filepath);
@@ -12,8 +17,7 @@ void SimpleLog::file_writer::define(const std::string &filepath, const uint16_t 
     m_defined = true;
 }
 
-const uint8_t SimpleLog::file_writer::start() {
-
+uint8_t SimpleLog::file_writer::start() {
     if (!m_defined)
         return PARAMETERS_NOT_DEFINED;
 
@@ -29,15 +33,15 @@ const uint8_t SimpleLog::file_writer::start() {
     }
 
     bool add_header = true;
-    std::filesystem::directory_entry logfile(filepath);
-    if (logfile.exists()) {
-        if (!logfile.is_regular_file())
+    std::filesystem::directory_entry file(filepath);
+    if (file.exists()) {
+        if (!file.is_regular_file())
             return INVALID_FILEPATH;
 
         add_header = false;
     }
 
-    m_file.open(logfile.path(), std::ios_base::app);
+    m_file.open(file.path(), std::ios_base::app);
     if (!m_file.is_open())
         return FILE_ACCESS_ERROR;
 
@@ -49,7 +53,7 @@ const uint8_t SimpleLog::file_writer::start() {
     return SUCCESS;
 }
 
-const uint8_t SimpleLog::file_writer::log(const std::string &severity, const std::string &timestamp, const std::string &source, const std::string &message) {
+uint8_t SimpleLog::file_writer::log(const std::string &severity, const std::string &timestamp, const std::string &source, const std::string &message) {
     if (!m_file.is_open())
         return FILE_NOT_OPEN;
 
